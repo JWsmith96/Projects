@@ -62,7 +62,7 @@ router.post('/createNewUser/insert', isAuthenticated, checkAuthLevel(2),
 // GET /configuration/edituserdetails
 router.get('/configuration/edituserdetails', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
     try {
-        const [users] = await pool.query('SELECT UserID, Username, AuthLevel FROM users');
+        const [users] = await pool.query('SELECT UserID, Username, Password, AuthLevel FROM users');
         res.render('edituserdetails', { edituserdetails: users, displayuser: req.user.username });
     } catch (err) {
         next(err);
