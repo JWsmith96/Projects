@@ -14,6 +14,10 @@ let selectedSq    = null;
 let legalMoves    = []; // legal moves for the selected piece
 let allLegalMoves = []; // all legal moves for the current player (for mandatory-capture highlight)
 
+// Mid-jump state — set while a multi-capture sequence is in progress
+// { origFromRow, origFromCol, currentRow, currentCol, captures: [{row,col,piece}] }
+let midJump = null;
+
 // ── Screen management ─────────────────────────────────────────────────────────
 
 function showScreen(id) {
@@ -41,6 +45,7 @@ function startGame(level) {
     isAIThinking = false;
     selectedSq   = null;
     legalMoves   = [];
+    midJump      = null;
 
     document.getElementById('you-label').textContent =
         `You (${playerColor === 'red' ? 'Red' : 'Black'})`;
@@ -85,7 +90,8 @@ function renderBoard() {
     }
 
     allLegalMoves = engine.getAllLegalMoves(engine.currentTurn);
-    const mustCapturePieces = engine.hasMandatoryCapture(engine.currentTurn)
+    // Don't show mandatory-capture glow mid-sequence — the player is already jumping
+    const mustCapturePieces = (!midJump && engine.hasMandatoryCapture(engine.currentTurn))
         ? new Set(allLegalMoves.map(m => `${m.fromRow},${m.fromCol}`))
         : new Set();
 
@@ -133,17 +139,31 @@ function getSq(row, col) {
 
 function onSquareClick(row, col) {
     if (isAIThinking) return;
-    if (engine.currentTurn !== playerColor) return;
     if (engine.gameStatus === 'gameover') return;
 
-    const piece = engine.board[row][col];
+    // ── Mid-jump: player must continue capturing, no other action allowed ──
+    if (midJump) {
+        const matched = legalMoves.find(m => m.toRow === row && m.toCol === col);
+        if (matched) {
+            clearHighlights();
+            doJumpStep(matched);
+        }
+        return;
+    }
+
+    if (engine.currentTurn !== playerColor) return;
+
+    const piece   = engine.board[row][col];
     const matched = legalMoves.find(m => m.toRow === row && m.toCol === col);
 
     // Clicked a highlighted destination
     if (matched) {
-        const from = selectedSq;
         clearHighlights();
-        executePlayerMove(matched);
+        if (matched.isJump) {
+            doJumpStep(matched);
+        } else {
+            executeSimpleMove(matched);
+        }
         return;
     }
 
@@ -151,16 +171,12 @@ function onSquareClick(row, col) {
     if (piece && piece.color === playerColor) {
         clearHighlights();
         const moves = engine.getLegalMovesFrom(row, col);
-        if (moves.length === 0) return; // this piece can't move (mandatory capture elsewhere)
+        if (moves.length === 0) return; // can't move this piece (mandatory capture elsewhere)
 
         selectedSq = { row, col };
         getSq(row, col).classList.add('selected');
         legalMoves = moves;
-
-        for (const m of moves) {
-            const el = getSq(m.toRow, m.toCol);
-            el.classList.add(m.isJump ? 'jump-sq' : 'valid-sq');
-        }
+        for (const m of moves) getSq(m.toRow, m.toCol).classList.add(m.isJump ? 'jump-sq' : 'valid-sq');
         return;
     }
 
@@ -175,9 +191,74 @@ function clearHighlights() {
     });
 }
 
-function executePlayerMove(move) {
+// ── Simple (non-capture) move ─────────────────────────────────────────────────
+
+function executeSimpleMove(move) {
     engine.makeMove(move);
+    midJump      = null;
     isAIThinking = true;
+    renderBoard();
+    updateUI();
+    if (engine.gameStatus === 'gameover') {
+        isAIThinking = false;
+        setTimeout(handleGameEnd, 800);
+        return;
+    }
+    triggerAIMove();
+}
+
+// ── Step-by-step jump execution ───────────────────────────────────────────────
+
+function doJumpStep(move) {
+    const result = engine.applySingleJump(move.fromRow, move.fromCol, move.toRow, move.toCol);
+
+    // Accumulate jump state
+    if (!midJump) {
+        midJump = {
+            origFromRow: move.fromRow, origFromCol: move.fromCol,
+            pieceColor: playerColor,
+            captures: []
+        };
+    }
+    midJump.captures.push({ row: result.captureRow, col: result.captureCol, piece: result.capturedPiece });
+    midJump.currentRow = move.toRow;
+    midJump.currentCol = move.toCol;
+
+    // If this jump crowned the piece, the turn ends immediately
+    if (result.becomesKing) {
+        finalizeJumpSequence(move.toRow, move.toCol);
+        return;
+    }
+
+    // Check for further jumps from the new position
+    const nextJumps = engine.getSingleJumpsFrom(move.toRow, move.toCol);
+    if (nextJumps.length > 0) {
+        // Re-render board showing piece at new position, then highlight next options
+        renderBoard();
+        updateUI();
+        selectedSq = { row: move.toRow, col: move.toCol };
+        legalMoves = nextJumps;
+        getSq(move.toRow, move.toCol).classList.add('selected');
+        for (const m of nextJumps) getSq(m.toRow, m.toCol).classList.add('jump-sq');
+    } else {
+        finalizeJumpSequence(move.toRow, move.toCol);
+    }
+}
+
+function finalizeJumpSequence(toRow, toCol) {
+    // Record the complete sequence as a single history entry
+    engine.moveHistory.push({
+        fromRow: midJump.origFromRow, fromCol: midJump.origFromCol,
+        toRow, toCol,
+        captures: midJump.captures,
+        isJump: true,
+        becomesKing: engine.board[toRow][toCol]?.type === 'king',
+        piece: { type: engine.board[toRow][toCol]?.type, color: midJump.pieceColor }
+    });
+
+    midJump      = null;
+    isAIThinking = true;
+    engine.finalizeTurn(playerColor);
     renderBoard();
     updateUI();
 
@@ -227,9 +308,13 @@ function updateStatus() {
         setStatus(`${engine.winner === 'red' ? 'Red' : 'Black'} wins!`);
         return;
     }
+    if (midJump) {
+        setStatus('Keep jumping! Select your next capture.');
+        return;
+    }
     const isYourTurn = engine.currentTurn === playerColor;
-    const turnName = engine.currentTurn === 'red' ? 'Red' : 'Black';
-    const capture  = engine.hasMandatoryCapture(engine.currentTurn) ? ' — must capture!' : '';
+    const turnName   = engine.currentTurn === 'red' ? 'Red' : 'Black';
+    const capture    = engine.hasMandatoryCapture(engine.currentTurn) ? ' — must capture!' : '';
     setStatus(`${turnName}'s turn${isYourTurn ? ' (Your turn)' : ''}${capture}`);
 }
 

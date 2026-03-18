@@ -46,13 +46,57 @@ class CheckersEngine {
         return this._getAllSimpleMoves(color);
     }
 
-    // All legal moves for a specific piece (respects mandatory capture)
+    // Legal moves for a specific piece shown in the UI.
+    // Returns SINGLE-STEP jumps (not complete sequences) so the player
+    // physically moves through each capture one click at a time.
     getLegalMovesFrom(row, col) {
         const color = this.board[row][col]?.color;
         if (!color) return [];
-        const jumps = this._getAllJumps(color);
-        if (jumps.length > 0) return jumps.filter(m => m.fromRow === row && m.fromCol === col);
+        if (this.hasMandatoryCapture(color)) return this.getSingleJumpsFrom(row, col);
         return this._getSimpleMovesFrom(row, col);
+    }
+
+    // Immediate one-step jump options from (row, col) on the current board.
+    // Captured pieces are already removed by applySingleJump, so no extra
+    // tracking needed — just check the live board state.
+    getSingleJumpsFrom(row, col) {
+        const piece = this.board[row][col];
+        if (!piece) return [];
+        const jumps = [];
+        for (const [dr, dc] of this.getDirs(piece)) {
+            const midRow = row + dr, midCol = col + dc;
+            const toRow  = row + 2 * dr, toCol  = col + 2 * dc;
+            if (toRow < 0 || toRow > 7 || toCol < 0 || toCol > 7) continue;
+            const mid = this.board[midRow][midCol];
+            if (!mid || mid.color === piece.color) continue;
+            if (this.board[toRow][toCol] !== null) continue;
+            jumps.push({ fromRow: row, fromCol: col, toRow, toCol, isJump: true });
+        }
+        return jumps;
+    }
+
+    // Apply one jump step without switching turns.
+    // Returns info needed to update history and check for promotion.
+    applySingleJump(fromRow, fromCol, toRow, toCol) {
+        const captureRow = (fromRow + toRow) / 2;
+        const captureCol = (fromCol + toCol) / 2;
+        const piece        = this.board[fromRow][fromCol];
+        const capturedPiece = { ...this.board[captureRow][captureCol] };
+
+        this.board[toRow][toCol]       = { ...piece };
+        this.board[fromRow][fromCol]   = null;
+        this.board[captureRow][captureCol] = null;
+
+        const becomesKing = piece.type === 'man' && this.isKingRow(piece.color, toRow);
+        if (becomesKing) this.board[toRow][toCol].type = 'king';
+
+        return { capturedPiece, captureRow, captureCol, becomesKing };
+    }
+
+    // Call once the full jump sequence is done to switch turns and check game status.
+    finalizeTurn(movingColor) {
+        this.currentTurn = this.opponent(movingColor);
+        this.updateGameStatus();
     }
 
     hasMandatoryCapture(color) {
