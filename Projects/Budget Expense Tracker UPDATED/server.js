@@ -1,8 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const helmet = require('helmet');
 
 const app = express();
+
+// Security headers
+app.use(helmet());
 
 // View engine
 app.set('view engine', 'ejs');
