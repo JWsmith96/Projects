@@ -1,248 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tic Tac Toe</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #1a1a2e;
-      font-family: 'Segoe UI', sans-serif;
-      color: #eee;
-    }
+        :root {
+            --bg:       #0f0f1a;
+            --surface:  #1a1a2e;
+            --surface2: #16213e;
+            --gold:     #f0a500;
+            --x-color:  #e94560;
+            --o-color:  #4fc3f7;
+            --text:     #e0e0e0;
+            --muted:    #888;
+        }
 
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-      letter-spacing: 2px;
-      color: #e94560;
-    }
+        .hidden { display: none !important; }
 
-    #status {
-      font-size: 1.2rem;
-      margin-bottom: 24px;
-      height: 1.5em;
-      color: #a8dadc;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
 
-    #board {
-      display: grid;
-      grid-template-columns: repeat(3, 110px);
-      grid-template-rows: repeat(3, 110px);
-      gap: 8px;
-    }
+        /* ── Screens ── */
+        .screen { display: none; width: 100%; min-height: 100vh; align-items: center; justify-content: center; }
+        .screen.active { display: flex; }
 
-    .cell {
-      width: 110px;
-      height: 110px;
-      background: #16213e;
-      border: 2px solid #0f3460;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-      user-select: none;
-    }
+        /* ── Start screen ── */
+        .start-wrapper { text-align: center; padding: 40px; }
 
-    .cell:hover:not(.taken) {
-      background: #0f3460;
-      transform: scale(1.05);
-    }
+        .start-wrapper h1 {
+            font-size: 3.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #e94560, #4fc3f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-    .cell.x {
-      color: #e94560;
-    }
+        .start-wrapper .tagline { color: var(--muted); margin-bottom: 40px; font-size: 1.1rem; }
+        .start-wrapper h2 { margin-bottom: 20px; font-size: 1.1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
 
-    .cell.o {
-      color: #a8dadc;
-    }
+        .color-btns { display: flex; gap: 24px; justify-content: center; margin-bottom: 40px; }
 
-    .cell.win {
-      background: #0f3460;
-      border-color: #e94560;
-      animation: pulse 0.5s ease;
-    }
+        .color-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            padding: 24px 40px;
+            background: var(--surface); border: 2px solid transparent; border-radius: 16px;
+            color: var(--text); cursor: pointer; transition: all 0.2s; font-size: 1rem;
+        }
+        .color-btn:hover { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 8px 32px rgba(240,165,0,0.2); }
+        .color-btn small { color: var(--muted); font-size: 0.8rem; }
 
-    @keyframes pulse {
-      0%   { transform: scale(1); }
-      50%  { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
+        .piece-icon { font-size: 3rem; font-weight: bold; line-height: 1; }
+        .piece-icon.x { color: var(--x-color); }
+        .piece-icon.o { color: var(--o-color); }
 
-    #controls {
-      margin-top: 28px;
-      display: flex;
-      gap: 12px;
-    }
+        .start-stats { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+        .stat-box { background: var(--surface); padding: 16px 24px; border-radius: 12px; text-align: center; }
+        .stat-box .stat-label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box .stat-value { font-size: 2rem; font-weight: bold; color: var(--gold); }
+        .stat-box .stat-value.x-val { color: var(--x-color); }
+        .stat-box .stat-value.o-val { color: var(--o-color); }
 
-    button {
-      padding: 10px 28px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: opacity 0.2s, transform 0.1s;
-    }
+        /* ── Game layout ── */
+        .game-layout { display: flex; gap: 20px; align-items: flex-start; padding: 20px; max-width: 1000px; width: 100%; }
 
-    button:hover {
-      opacity: 0.85;
-      transform: scale(1.04);
-    }
+        .sidebar { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
 
-    #restart {
-      background: #e94560;
-      color: #fff;
-    }
+        .panel { background: var(--surface); border-radius: 12px; padding: 16px; }
+        .panel h3 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
 
-    #score {
-      margin-top: 28px;
-      display: flex;
-      gap: 32px;
-      font-size: 1rem;
-      color: #aaa;
-    }
+        .score-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.95rem; }
+        .score-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .score-num { font-size: 1.4rem; font-weight: bold; }
+        .score-num.x { color: var(--x-color); }
+        .score-num.o { color: var(--o-color); }
+        .score-num.draw { color: var(--gold); }
 
-    .score-box {
-      text-align: center;
-    }
+        .move-history { max-height: 280px; overflow-y: auto; font-size: 0.82rem; scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
+        .history-row { display: grid; grid-template-columns: 28px 1fr 1fr; gap: 4px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .history-row:last-child { border-bottom: none; }
+        .move-num { color: var(--muted); }
+        .move-x { color: var(--x-color); }
+        .move-o { color: var(--o-color); }
 
-    .score-box span {
-      display: block;
-      font-size: 1.8rem;
-      font-weight: bold;
-      color: #eee;
-    }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; }
+        .btn-action { padding: 10px 16px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; text-align: center; text-decoration: none; display: block; }
+        .btn-action:hover { background: rgba(255,255,255,0.08); border-color: var(--muted); }
+        .btn-action.danger { border-color: rgba(233,69,96,0.4); color: var(--x-color); }
+        .btn-action.danger:hover { background: rgba(233,69,96,0.1); }
 
-    .score-box.x-score label { color: #e94560; }
-    .score-box.o-score label { color: #a8dadc; }
-    .score-box.draw-score label { color: #aaa; }
-  </style>
+        /* ── Board area ── */
+        .board-area { display: flex; flex-direction: column; align-items: center; gap: 16px; flex: 1; }
+
+        .status-bar { background: var(--surface); border-radius: 10px; padding: 10px 24px; font-size: 1rem; font-weight: 600; min-width: 260px; text-align: center; }
+
+        /* ── Tic Tac Toe board ── */
+        .ttt-board {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 10px;
+        }
+
+        .cell {
+            width: 120px; height: 120px;
+            background: var(--surface);
+            border: 2px solid var(--surface2);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3.5rem; font-weight: bold;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s, border-color 0.15s;
+            user-select: none;
+        }
+        .cell:hover:not(.taken) { background: var(--surface2); border-color: var(--muted); transform: scale(1.04); }
+        .cell.x { color: var(--x-color); cursor: default; }
+        .cell.o { color: var(--o-color); cursor: default; }
+        .cell.win { border-color: var(--gold); background: rgba(240,165,0,0.08); animation: winPulse 0.4s ease; }
+
+        @keyframes winPulse {
+            0%   { transform: scale(1); }
+            50%  { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        /* ── Result screen ── */
+        .result-wrapper { text-align: center; padding: 48px; max-width: 440px; }
+        .result-icon { font-size: 5rem; margin-bottom: 16px; }
+        .result-wrapper h1 {
+            font-size: 2.5rem; margin-bottom: 12px;
+            background: linear-gradient(135deg, #e94560, #4fc3f7);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .result-msg { color: var(--muted); margin-bottom: 32px; font-size: 1rem; }
+
+        .final-scores { display: flex; gap: 20px; justify-content: center; margin-bottom: 32px; flex-wrap: wrap; }
+        .final-score-box { background: var(--surface); border-radius: 12px; padding: 14px 24px; text-align: center; }
+        .final-score-box .label { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .final-score-box .value { font-size: 2rem; font-weight: bold; }
+        .final-score-box .value.x { color: var(--x-color); }
+        .final-score-box .value.o { color: var(--o-color); }
+        .final-score-box .value.draw { color: var(--gold); }
+
+        .result-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary { padding: 14px 32px; background: var(--gold); border: none; border-radius: 10px; color: #1a1a1a; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-primary:hover { background: #ffb920; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(240,165,0,0.4); }
+        .btn-secondary { padding: 14px 32px; background: transparent; border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: var(--text); font-size: 1rem; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; }
+        .btn-secondary:hover { border-color: var(--muted); background: rgba(255,255,255,0.05); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+        @media (max-width: 780px) {
+            .game-layout { flex-direction: column; align-items: center; }
+            .sidebar { width: 100%; max-width: 380px; flex-direction: row; flex-wrap: wrap; }
+            .panel { flex: 1; min-width: 140px; }
+        }
+    </style>
 </head>
 <body>
 
-  <h1>Tic Tac Toe</h1>
-  <div id="status">Player X's turn</div>
+<!-- ═══════════════════════════════ START SCREEN ═══════════════════════════════ -->
+<div id="start-screen" class="screen active">
+    <div class="start-wrapper">
+        <h1>✕ ○ Tic Tac Toe</h1>
+        <p class="tagline">Two players, one board, no mercy</p>
 
-  <div id="board">
-    <div class="cell" data-i="0"></div>
-    <div class="cell" data-i="1"></div>
-    <div class="cell" data-i="2"></div>
-    <div class="cell" data-i="3"></div>
-    <div class="cell" data-i="4"></div>
-    <div class="cell" data-i="5"></div>
-    <div class="cell" data-i="6"></div>
-    <div class="cell" data-i="7"></div>
-    <div class="cell" data-i="8"></div>
-  </div>
+        <h2>First player goes as</h2>
+        <div class="color-btns">
+            <button class="color-btn" onclick="startGame('X')">
+                <span class="piece-icon x">✕</span>
+                <span>X</span>
+                <small>Moves first</small>
+            </button>
+            <button class="color-btn" onclick="startGame('O')">
+                <span class="piece-icon o">○</span>
+                <span>O</span>
+                <small>Moves first</small>
+            </button>
+        </div>
 
-  <div id="controls">
-    <button id="restart">Restart</button>
-  </div>
-
-  <div id="score">
-    <div class="score-box x-score">
-      <label>Player X</label>
-      <span id="score-x">0</span>
+        <div class="start-stats">
+            <div class="stat-box">
+                <div class="stat-label">X Wins</div>
+                <div class="stat-value x-val" id="start-score-x">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Draws</div>
+                <div class="stat-value" id="start-score-draw">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">O Wins</div>
+                <div class="stat-value o-val" id="start-score-o">0</div>
+            </div>
+        </div>
     </div>
-    <div class="score-box draw-score">
-      <label>Draws</label>
-      <span id="score-draw">0</span>
-    </div>
-    <div class="score-box o-score">
-      <label>Player O</label>
-      <span id="score-o">0</span>
-    </div>
-  </div>
+</div>
 
-  <script>
+<!-- ════════════════════════════════ GAME SCREEN ════════════════════════════════ -->
+<div id="game-screen" class="screen">
+    <div class="game-layout">
+
+        <!-- Left sidebar -->
+        <div class="sidebar">
+            <div class="panel">
+                <h3>Score</h3>
+                <div class="score-row">
+                    <span style="color:var(--x-color)">X</span>
+                    <span class="score-num x" id="score-x">0</span>
+                </div>
+                <div class="score-row">
+                    <span>Draws</span>
+                    <span class="score-num draw" id="score-draw">0</span>
+                </div>
+                <div class="score-row">
+                    <span style="color:var(--o-color)">O</span>
+                    <span class="score-num o" id="score-o">0</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>Game</h3>
+                <div style="font-size:0.85rem; color:var(--muted); line-height:1.8;">
+                    <div>Round: <strong id="round-num" style="color:var(--text)">1</strong></div>
+                    <div>First: <strong id="first-player" style="color:var(--text)">X</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Board -->
+        <div class="board-area">
+            <div class="status-bar">
+                <span id="status-text">X's turn</span>
+            </div>
+            <div class="ttt-board" id="ttt-board">
+                <div class="cell" data-i="0"></div>
+                <div class="cell" data-i="1"></div>
+                <div class="cell" data-i="2"></div>
+                <div class="cell" data-i="3"></div>
+                <div class="cell" data-i="4"></div>
+                <div class="cell" data-i="5"></div>
+                <div class="cell" data-i="6"></div>
+                <div class="cell" data-i="7"></div>
+                <div class="cell" data-i="8"></div>
+            </div>
+        </div>
+
+        <!-- Right sidebar -->
+        <div class="sidebar">
+            <div class="panel">
+                <h3>Move History</h3>
+                <div class="move-history" id="move-history"></div>
+            </div>
+            <div class="panel btn-group">
+                <button class="btn-action danger" onclick="resignGame()">Resign</button>
+                <button class="btn-action" onclick="backToMenu()">Menu</button>
+                <a class="btn-action" href="games-hub.html">← Hub</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════ RESULT SCREEN ════════════════════════════════ -->
+<div id="result-screen" class="screen">
+    <div class="result-wrapper">
+        <div class="result-icon" id="result-icon">🏆</div>
+        <h1 id="result-title">Game Over</h1>
+        <p class="result-msg" id="result-msg"></p>
+
+        <div class="final-scores">
+            <div class="final-score-box">
+                <div class="label">X Wins</div>
+                <div class="value x" id="result-score-x">0</div>
+            </div>
+            <div class="final-score-box">
+                <div class="label">Draws</div>
+                <div class="value draw" id="result-score-draw">0</div>
+            </div>
+            <div class="final-score-box">
+                <div class="label">O Wins</div>
+                <div class="value o" id="result-score-o">0</div>
+            </div>
+        </div>
+
+        <div class="result-btns">
+            <button class="btn-primary" onclick="playAgain()">Play Again</button>
+            <button class="btn-secondary" onclick="backToMenu()">Menu</button>
+            <a class="btn-secondary" href="games-hub.html">← Hub</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Constants ─────────────────────────────────────────────────────────────
     const WINS = [
-      [0,1,2],[3,4,5],[6,7,8], // rows
-      [0,3,6],[1,4,7],[2,5,8], // cols
-      [0,4,8],[2,4,6]          // diagonals
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
     ];
 
-    let board = Array(9).fill(null);
-    let current = 'X';
-    let gameOver = false;
-    let scores = { X: 0, O: 0, draw: 0 };
+    const COL_LABEL = ['A','B','C'];
+    const ROW_LABEL = ['1','2','3'];
+
+    // ── Persistent scores ─────────────────────────────────────────────────────
+    let scores = {
+        X:    parseInt(localStorage.getItem('ttt_scoreX')    || '0', 10),
+        O:    parseInt(localStorage.getItem('ttt_scoreO')    || '0', 10),
+        draw: parseInt(localStorage.getItem('ttt_scoreDraw') || '0', 10)
+    };
+
+    // ── Game state ────────────────────────────────────────────────────────────
+    let board      = Array(9).fill(null);
+    let current    = 'X';
+    let firstPlayer = 'X';
+    let gameOver   = false;
+    let moveLog    = []; // [{player, cell}]
+    let round      = 1;
 
     const cells = document.querySelectorAll('.cell');
-    const status = document.getElementById('status');
-    const scoreX = document.getElementById('score-x');
-    const scoreO = document.getElementById('score-o');
-    const scoreDraw = document.getElementById('score-draw');
-
     cells.forEach(cell => cell.addEventListener('click', handleClick));
-    document.getElementById('restart').addEventListener('click', resetGame);
 
+    // ── Screen management ─────────────────────────────────────────────────────
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // ── Start ─────────────────────────────────────────────────────────────────
+    function startGame(first) {
+        firstPlayer = first;
+        current     = first;
+        board       = Array(9).fill(null);
+        gameOver    = false;
+        moveLog     = [];
+
+        cells.forEach(c => { c.textContent = ''; c.className = 'cell'; });
+        document.getElementById('first-player').textContent = first;
+        document.getElementById('round-num').textContent    = round;
+        updateStatus();
+        updateScoreDisplay();
+        updateHistory();
+        showScreen('game-screen');
+    }
+
+    // ── Click handler ─────────────────────────────────────────────────────────
     function handleClick(e) {
-      const i = +e.target.dataset.i;
-      if (gameOver || board[i]) return;
+        const i = +e.target.dataset.i;
+        if (gameOver || board[i]) return;
 
-      board[i] = current;
-      e.target.textContent = current;
-      e.target.classList.add('taken', current.toLowerCase());
+        board[i] = current;
+        e.target.textContent = current === 'X' ? '✕' : '○';
+        e.target.classList.add('taken', current.toLowerCase());
+        moveLog.push({ player: current, cell: i });
+        updateHistory();
 
-      const winLine = getWinner();
-      if (winLine) {
-        winLine.forEach(idx => cells[idx].classList.add('win'));
-        status.textContent = `Player ${current} wins!`;
-        scores[current]++;
-        updateScores();
-        gameOver = true;
-      } else if (board.every(Boolean)) {
-        status.textContent = "It's a draw!";
-        scores.draw++;
-        updateScores();
-        gameOver = true;
-      } else {
-        current = current === 'X' ? 'O' : 'X';
-        status.textContent = `Player ${current}'s turn`;
-      }
-    }
-
-    function getWinner() {
-      for (const line of WINS) {
-        const [a, b, c] = line;
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-          return line;
+        const winLine = getWinner();
+        if (winLine) {
+            winLine.forEach(idx => cells[idx].classList.add('win'));
+            scores[current]++;
+            localStorage.setItem(`ttt_score${current}`, scores[current]);
+            gameOver = true;
+            setTimeout(() => showResult(current, winLine), 600);
+        } else if (board.every(Boolean)) {
+            scores.draw++;
+            localStorage.setItem('ttt_scoreDraw', scores.draw);
+            gameOver = true;
+            setTimeout(() => showResult(null), 600);
+        } else {
+            current = current === 'X' ? 'O' : 'X';
+            updateStatus();
         }
-      }
-      return null;
+
+        updateScoreDisplay();
     }
 
-    function updateScores() {
-      scoreX.textContent = scores.X;
-      scoreO.textContent = scores.O;
-      scoreDraw.textContent = scores.draw;
+    // ── Win detection ─────────────────────────────────────────────────────────
+    function getWinner() {
+        for (const line of WINS) {
+            const [a, b, c] = line;
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) return line;
+        }
+        return null;
     }
 
-    function resetGame() {
-      board = Array(9).fill(null);
-      current = 'X';
-      gameOver = false;
-      status.textContent = "Player X's turn";
-      cells.forEach(cell => {
-        cell.textContent = '';
-        cell.className = 'cell';
-      });
+    // ── UI helpers ────────────────────────────────────────────────────────────
+    function updateStatus() {
+        document.getElementById('status-text').textContent = `${current}'s turn`;
     }
-  </script>
+
+    function updateScoreDisplay() {
+        ['x','o','draw'].forEach(k => {
+            const key = k === 'draw' ? 'draw' : k.toUpperCase();
+            document.getElementById(`score-${k}`).textContent   = scores[key];
+            const startEl = document.getElementById(`start-score-${k}`);
+            if (startEl) startEl.textContent = scores[key];
+        });
+    }
+
+    function cellLabel(i) {
+        return `${COL_LABEL[i % 3]}${ROW_LABEL[Math.floor(i / 3)]}`;
+    }
+
+    function updateHistory() {
+        const el = document.getElementById('move-history');
+        el.innerHTML = '';
+        for (let i = 0; i < moveLog.length; i += 2) {
+            const row = document.createElement('div');
+            row.className = 'history-row';
+            const num = document.createElement('span');
+            num.className = 'move-num';
+            num.textContent = `${Math.floor(i / 2) + 1}.`;
+            const x = document.createElement('span');
+            x.className = `move-${moveLog[i].player.toLowerCase()}`;
+            x.textContent = `${moveLog[i].player}→${cellLabel(moveLog[i].cell)}`;
+            const o = document.createElement('span');
+            if (moveLog[i + 1]) {
+                o.className = `move-${moveLog[i+1].player.toLowerCase()}`;
+                o.textContent = `${moveLog[i+1].player}→${cellLabel(moveLog[i+1].cell)}`;
+            }
+            row.append(num, x, o);
+            el.appendChild(row);
+        }
+        el.scrollTop = el.scrollHeight;
+    }
+
+    // ── Result screen ─────────────────────────────────────────────────────────
+    function showResult(winner) {
+        let icon, title, msg;
+        if (winner) {
+            icon  = '🏆';
+            title = `${winner} Wins!`;
+            msg   = `Player ${winner} wins this round!`;
+        } else {
+            icon  = '🤝';
+            title = 'Draw!';
+            msg   = 'Nobody wins this round.';
+        }
+        document.getElementById('result-icon').textContent        = icon;
+        document.getElementById('result-title').textContent       = title;
+        document.getElementById('result-msg').textContent         = msg;
+        document.getElementById('result-score-x').textContent     = scores.X;
+        document.getElementById('result-score-draw').textContent  = scores.draw;
+        document.getElementById('result-score-o').textContent     = scores.O;
+        round++;
+        showScreen('result-screen');
+    }
+
+    // ── Button handlers ───────────────────────────────────────────────────────
+    function resignGame() {
+        if (gameOver) return;
+        const winner = current === 'X' ? 'O' : 'X';
+        scores[winner]++;
+        localStorage.setItem(`ttt_score${winner}`, scores[winner]);
+        gameOver = true;
+        showResult(winner);
+    }
+
+    function playAgain() {
+        // Alternate who goes first each round
+        const next = firstPlayer === 'X' ? 'O' : 'X';
+        startGame(next);
+    }
+
+    function backToMenu() {
+        updateScoreDisplay();
+        showScreen('start-screen');
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    updateScoreDisplay();
+</script>
 </body>
 </html>
