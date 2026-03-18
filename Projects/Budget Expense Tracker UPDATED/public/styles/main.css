@@ -112,6 +112,11 @@ body::after {  /* Used to preload images for transitions */
     max-width: calc(100vw - 24px);
     margin: 12px;
 }
+.header-box .header-logout {
+    grid-column: 1;
+    justify-self: start;
+    padding-left: 2%;
+}
 .header-box .current-page {
     grid-column: 2;
     justify-self: center;
