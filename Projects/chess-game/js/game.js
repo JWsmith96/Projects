@@ -114,14 +114,12 @@ function onSquareClick(row, col) {
 
     // Clicked a highlighted destination square — execute the move
     if (matchedMove) {
+        const from = selectedSq;
         clearHighlights();
         if (matchedMove.special === 'promotion') {
-            pendingPromotion = { fromRow: selectedSq.row, fromCol: selectedSq.col, move: matchedMove };
-            selectedSq = null;
+            pendingPromotion = { fromRow: from.row, fromCol: from.col, move: matchedMove };
             showPromotionModal(playerColor);
         } else {
-            const from = selectedSq;
-            selectedSq = null;
             executePlayerMove(from.row, from.col, matchedMove);
         }
         return;
@@ -155,14 +153,16 @@ function clearHighlights() {
 
 function executePlayerMove(fromRow, fromCol, move, promotionPiece = 'queen') {
     engine.makeMove(fromRow, fromCol, move, promotionPiece);
+    isAIThinking = true; // block player input immediately — no gap before AI starts
     renderBoard();
     updateUI();
 
     if (engine.gameStatus === 'checkmate' || engine.gameStatus === 'stalemate') {
+        isAIThinking = false;
         setTimeout(handleGameEnd, 800);
         return;
     }
-    setTimeout(triggerAIMove, 300);
+    triggerAIMove(); // already has its own 50ms internal delay for UI paint
 }
 
 // ─── Promotion ────────────────────────────────────────────────────────────────
