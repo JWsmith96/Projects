@@ -1,0 +1,5 @@
+# Environment variables - never commit real credentials
+.env
+
+# Dependencies
+node_modules/
