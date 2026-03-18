@@ -4,9 +4,9 @@ const path = require('path');
 const helmet = require('helmet');
 const session = require('express-session');
 const flash = require('express-flash');
-const passport = require('passport');
 const rateLimit = require('express-rate-limit');
 const pool = require('./db/pool');
+const passport = require('./config/passport');
 
 const app = express();
 
