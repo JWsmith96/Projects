@@ -1,8 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const pool = require('../db/pool');
 const { isAuthenticated, checkAuthLevel } = require('../middleware/auth');
 const { toNullable, toNullableNumber, recurringPeriodList, setNextDatePeriod, getDayOfWeekDate, formatDate } = require('../utils/dateHelpers');
+
+function validate(req, res) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    return null;
+}
 
 // GET /expenses
 router.get('/expenses', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
@@ -38,7 +45,10 @@ router.get('/expensetypes', isAuthenticated, checkAuthLevel(2), async (req, res,
 });
 
 // POST /expensetypes/update
-router.post('/expensetypes/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/expensetypes/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     try {
         const { hiddenExpenseTypeID, editName, editDescription } = req.body;
         if (!hiddenExpenseTypeID) {
@@ -63,7 +73,11 @@ router.post('/expensetypes/delete', isAuthenticated, checkAuthLevel(2), async (r
 });
 
 // POST /expenses/update
-router.post('/expenses/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/expenses/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    body('editAmount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     const b = req.body;
     const expenseTypeID = b.editExpenseType === '0' ? null : toNullableNumber(b.editExpenseType);
     const fields = [

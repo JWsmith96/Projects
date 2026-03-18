@@ -1,8 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const pool = require('../db/pool');
 const { isAuthenticated, checkAuthLevel } = require('../middleware/auth');
 const { toNullable, toNullableNumber } = require('../utils/dateHelpers');
+
+function validate(req, res) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    return null;
+}
 
 // GET /liabilities
 router.get('/liabilities', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
@@ -35,7 +42,10 @@ router.get('/liabilitytypes', isAuthenticated, checkAuthLevel(2), async (req, re
 });
 
 // POST /liabilitytypes/update
-router.post('/liabilitytypes/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/liabilitytypes/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     try {
         const { hiddenLiabilityTypeID, editName, editDescription } = req.body;
         if (!hiddenLiabilityTypeID) {
@@ -66,7 +76,10 @@ router.post('/liabilitytypes/delete', isAuthenticated, checkAuthLevel(2), async 
 });
 
 // POST /liabilities/update
-router.post('/liabilities/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/liabilities/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     try {
         const b = req.body;
         const liabilityTypeID = b.editLiabilityType === '0' ? null : toNullableNumber(b.editLiabilityType);

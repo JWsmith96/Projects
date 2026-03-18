@@ -1,9 +1,16 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const pool = require('../db/pool');
 const { isAuthenticated, checkAuthLevel } = require('../middleware/auth');
 const { toNullable, toNullableNumber, recurringPeriodList, setNextDatePeriod, getDayOfWeekDate, formatDate } = require('../utils/dateHelpers');
 const { isSameDay } = require('date-fns');
+
+function validate(req, res) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    return null;
+}
 
 // GET /incomes
 router.get('/incomes', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
@@ -39,7 +46,10 @@ router.get('/incometypes', isAuthenticated, checkAuthLevel(2), async (req, res, 
 });
 
 // POST /incometypes/update
-router.post('/incometypes/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/incometypes/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     try {
         const { hiddenIncomeTypeID, editName, editDescription } = req.body;
         if (!hiddenIncomeTypeID) {
@@ -64,7 +74,11 @@ router.post('/incometypes/delete', isAuthenticated, checkAuthLevel(2), async (re
 });
 
 // POST /incomes/update
-router.post('/incomes/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/incomes/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    body('editAmount').isFloat({ min: 0 }).withMessage('Amount must be a positive number'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     const b = req.body;
     const incomeTypeID = b.editIncomeType === '0' ? null : toNullableNumber(b.editIncomeType);
     const assetID = toNullableNumber(b.editAsset);
