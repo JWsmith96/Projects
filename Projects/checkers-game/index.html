@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkers</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════ START SCREEN ═══════════════════════════════ -->
+<div id="start-screen" class="screen active">
+    <div class="start-wrapper">
+        <h1>⬤ Checkers</h1>
+        <p class="tagline">Pick your colour, pick your challenge</p>
+
+        <!-- Step 1: colour -->
+        <div id="color-section">
+            <h2>Play as</h2>
+            <div class="color-btns">
+                <button class="color-btn" onclick="selectColor('red')">
+                    <span class="piece-icon red-icon"></span>
+                    <span>Red</span>
+                    <small>You move first</small>
+                </button>
+                <button class="color-btn" onclick="selectColor('black')">
+                    <span class="piece-icon black-icon"></span>
+                    <span>Black</span>
+                    <small>AI moves first</small>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: difficulty -->
+        <div id="difficulty-section" class="hidden">
+            <h2>Choose Difficulty</h2>
+            <div class="diff-btns">
+                <button class="diff-btn diff-1" onclick="startGame(1)">
+                    <span class="diff-name">Beginner</span>
+                    <small>Random play, no strategy</small>
+                </button>
+                <button class="diff-btn diff-2" onclick="startGame(2)">
+                    <span class="diff-name">Novice</span>
+                    <small>Captures when able</small>
+                </button>
+                <button class="diff-btn diff-3" onclick="startGame(3)">
+                    <span class="diff-name">Intermediate</span>
+                    <small>Positional awareness</small>
+                </button>
+                <button class="diff-btn diff-4" onclick="startGame(4)">
+                    <span class="diff-name">Advanced</span>
+                    <small>Tactical planning ahead</small>
+                </button>
+                <button class="diff-btn diff-5" onclick="startGame(5)">
+                    <span class="diff-name">Expert</span>
+                    <small>Deep analysis + safety</small>
+                </button>
+            </div>
+            <button class="btn-back" onclick="backToColorSelect()">← Back</button>
+        </div>
+
+        <div class="start-stats">
+            <div class="stat-box">
+                <div class="stat-label">You</div>
+                <div class="stat-value" id="start-score-you">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">AI</div>
+                <div class="stat-value" id="start-score-ai">0</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════ GAME SCREEN ════════════════════════════════ -->
+<div id="game-screen" class="screen">
+    <div class="game-layout">
+
+        <!-- Left sidebar -->
+        <div class="sidebar">
+            <div class="panel">
+                <h3>Score</h3>
+                <div class="score-row">
+                    <span id="you-label">You (Red)</span>
+                    <span class="score-num" id="score-you">0</span>
+                </div>
+                <div class="score-row">
+                    <span>AI</span>
+                    <span class="score-num" id="score-ai">0</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>AI Level</h3>
+                <div class="level-bar">
+                    <div class="level-bar-fill" id="ai-level-bar-fill" style="width:20%"></div>
+                </div>
+                <div class="level-name" id="ai-level-name">Beginner</div>
+                <div class="level-sub">Games: <span id="ai-games-count">0</span></div>
+            </div>
+
+            <div class="panel">
+                <h3>Captured</h3>
+                <div class="captured-label">You captured</div>
+                <div class="captured-area" id="captured-by-player"></div>
+                <div class="captured-label" style="margin-top:10px">AI captured</div>
+                <div class="captured-area" id="captured-by-ai"></div>
+            </div>
+        </div>
+
+        <!-- Board -->
+        <div class="board-area">
+            <div class="status-bar">
+                <span id="status-text">Red's turn</span>
+            </div>
+            <div class="board-wrapper">
+                <div class="rank-labels" id="rank-labels"></div>
+                <div class="board-and-files">
+                    <div id="checkers-board" class="checkers-board"></div>
+                    <div class="file-labels" id="file-labels"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right sidebar -->
+        <div class="sidebar">
+            <div class="panel">
+                <h3>Move History</h3>
+                <div class="move-history" id="move-history"></div>
+            </div>
+            <div class="panel btn-group">
+                <button class="btn-action" onclick="offerDraw()">Offer Draw</button>
+                <button class="btn-action danger" onclick="resignGame()">Resign</button>
+                <button class="btn-action" onclick="backToMenu()">Menu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════ RESULT SCREEN ════════════════════════════════ -->
+<div id="result-screen" class="screen">
+    <div class="result-wrapper">
+        <div class="result-icon" id="result-icon">🏆</div>
+        <h1 id="result-title">Game Over</h1>
+        <p class="result-msg" id="result-msg"></p>
+
+        <div class="final-scores">
+            <div class="final-score-box">
+                <div class="label">You</div>
+                <div class="value" id="result-score-you">0</div>
+            </div>
+            <div class="final-score-box">
+                <div class="label">AI</div>
+                <div class="value" id="result-score-ai">0</div>
+            </div>
+        </div>
+
+        <p class="result-level-msg" id="result-level-msg"></p>
+
+        <div class="result-btns">
+            <button class="btn-primary" onclick="playAgain()">Play Again</button>
+            <button class="btn-secondary" onclick="switchSides()">Switch Sides</button>
+            <button class="btn-secondary" onclick="backToMenu()">Main Menu</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/engine.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
