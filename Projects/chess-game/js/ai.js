@@ -1,27 +1,24 @@
 // Chess AI - Minimax with alpha-beta pruning
-// "Learns" by increasing search depth and evaluation sophistication as games are played
 
 class ChessAI {
     constructor() {
         this.gamesPlayed = 0;
+        this.level = 1; // set externally via setLevel()
     }
 
-    // Returns current difficulty level 1-5
-    getLevel() {
-        if (this.gamesPlayed < 3)  return 1;
-        if (this.gamesPlayed < 6)  return 2;
-        if (this.gamesPlayed < 10) return 3;
-        if (this.gamesPlayed < 15) return 4;
-        return 5;
+    setLevel(level) {
+        this.level = Math.max(1, Math.min(5, level));
     }
+
+    getLevel() { return this.level; }
 
     getLevelName() {
-        return ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Expert'][this.getLevel() - 1];
+        return ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Expert'][this.level - 1];
     }
 
     // Search depth based on level
     getDepth() {
-        return [1, 2, 3, 4, 4][this.getLevel() - 1];
+        return [1, 2, 3, 4, 4][this.level - 1];
     }
 
     // Find the best move for 'color' in the current engine state

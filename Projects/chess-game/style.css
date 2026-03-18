@@ -44,6 +44,8 @@ body {
     background-clip: text;
 }
 
+.hidden { display: none !important; }
+
 .start-wrapper .tagline {
     color: var(--muted);
     margin-bottom: 40px;
@@ -92,6 +94,51 @@ body {
 }
 
 .color-btn small { color: var(--muted); font-size: 0.8rem; }
+
+/* Difficulty selection */
+.diff-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+    width: 340px;
+}
+
+.diff-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.diff-btn:hover { transform: translateX(4px); border-color: currentColor; }
+
+.diff-name { font-size: 1rem; font-weight: 600; }
+.diff-btn small { color: var(--muted); font-size: 0.8rem; }
+
+.diff-1 { color: #4caf50; }
+.diff-2 { color: #8bc34a; }
+.diff-3 { color: #ff9800; }
+.diff-4 { color: #ff5722; }
+.diff-5 { color: #f44336; }
+
+.btn-back {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 6px 0;
+    transition: color 0.2s;
+}
+.btn-back:hover { color: var(--text); }
 
 .start-stats {
     display: flex;

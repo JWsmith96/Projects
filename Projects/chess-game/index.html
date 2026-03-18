@@ -12,20 +12,51 @@
 <div id="start-screen" class="screen active">
     <div class="start-wrapper">
         <h1>♟ Chess</h1>
-        <p class="tagline">Challenge an AI that learns as it plays</p>
+        <p class="tagline">Pick your colour, pick your challenge</p>
 
-        <h2>Play as</h2>
-        <div class="color-btns">
-            <button class="color-btn" onclick="startGame('white')">
-                <span class="piece-icon">♔</span>
-                <span>White</span>
-                <small>You move first</small>
-            </button>
-            <button class="color-btn" onclick="startGame('black')">
-                <span class="piece-icon">♚</span>
-                <span>Black</span>
-                <small>AI moves first</small>
-            </button>
+        <!-- Step 1: colour selection -->
+        <div id="color-section">
+            <h2>Play as</h2>
+            <div class="color-btns">
+                <button class="color-btn" onclick="selectColor('white')">
+                    <span class="piece-icon">♔</span>
+                    <span>White</span>
+                    <small>You move first</small>
+                </button>
+                <button class="color-btn" onclick="selectColor('black')">
+                    <span class="piece-icon">♚</span>
+                    <span>Black</span>
+                    <small>AI moves first</small>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: difficulty selection (hidden until colour is chosen) -->
+        <div id="difficulty-section" class="hidden">
+            <h2>Choose Difficulty</h2>
+            <div class="diff-btns">
+                <button class="diff-btn diff-1" onclick="startGame(1)">
+                    <span class="diff-name">Beginner</span>
+                    <small>Random play, no strategy</small>
+                </button>
+                <button class="diff-btn diff-2" onclick="startGame(2)">
+                    <span class="diff-name">Novice</span>
+                    <small>Captures pieces when able</small>
+                </button>
+                <button class="diff-btn diff-3" onclick="startGame(3)">
+                    <span class="diff-name">Intermediate</span>
+                    <small>Positional awareness</small>
+                </button>
+                <button class="diff-btn diff-4" onclick="startGame(4)">
+                    <span class="diff-name">Advanced</span>
+                    <small>Tactical planning ahead</small>
+                </button>
+                <button class="diff-btn diff-5" onclick="startGame(5)">
+                    <span class="diff-name">Expert</span>
+                    <small>Full analysis + pawn structure</small>
+                </button>
+            </div>
+            <button class="btn-back" onclick="backToColorSelect()">← Back</button>
         </div>
 
         <div class="start-stats">
@@ -38,7 +69,6 @@
                 <div class="stat-value" id="start-score-ai">0</div>
             </div>
         </div>
-        <p class="start-ai-info">AI Level: <strong id="start-ai-level">Beginner</strong></p>
     </div>
 </div>
 

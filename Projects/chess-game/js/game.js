@@ -13,6 +13,7 @@ const ai = new ChessAI();
 // Per-game state
 let engine = null;
 let playerColor = 'white';
+let pendingColor = 'white'; // chosen on start screen, committed when difficulty is picked
 let isAIThinking = false;
 let selectedSq = null;
 let highlightedMoves = [];
@@ -27,15 +28,27 @@ function showScreen(id) {
 
 // ─── Game start ───────────────────────────────────────────────────────────────
 
-function startGame(color) {
-    playerColor = color;
+function selectColor(color) {
+    pendingColor = color;
+    document.getElementById('color-section').classList.add('hidden');
+    document.getElementById('difficulty-section').classList.remove('hidden');
+}
+
+function backToColorSelect() {
+    document.getElementById('difficulty-section').classList.add('hidden');
+    document.getElementById('color-section').classList.remove('hidden');
+}
+
+function startGame(level) {
+    ai.setLevel(level);
+    playerColor = pendingColor;
     engine = new ChessEngine();
     isAIThinking = false;
     selectedSq = null;
     highlightedMoves = [];
     pendingPromotion = null;
 
-    document.getElementById('you-label').textContent = `You (${color === 'white' ? 'White' : 'Black'})`;
+    document.getElementById('you-label').textContent = `You (${playerColor === 'white' ? 'White' : 'Black'})`;
     showScreen('game-screen');
     renderBoard();
     updateUI();
@@ -252,7 +265,6 @@ function updateAIPanel() {
     document.getElementById('ai-level-name').textContent  = name;
     document.getElementById('ai-games-count').textContent = ai.gamesPlayed;
     document.getElementById('ai-level-bar-fill').style.width = `${(level / 5) * 100}%`;
-    document.getElementById('start-ai-level').textContent = name;
 }
 
 function markKingInCheck(color) {
@@ -312,10 +324,7 @@ function updateCaptured() {
 // ─── Game end ─────────────────────────────────────────────────────────────────
 
 function handleGameEnd() {
-    const aiColor = playerColor === 'white' ? 'black' : 'white';
-    const prevLevel = ai.getLevel();
     ai.onGameComplete();
-    const newLevel = ai.getLevel();
 
     let icon, title, msg;
     if (engine.gameStatus === 'checkmate') {
@@ -330,16 +339,13 @@ function handleGameEnd() {
         icon = '🤝'; title = 'Draw!'; msg = 'The game ended in a stalemate.';
     }
 
-    document.getElementById('result-icon').textContent    = icon;
-    document.getElementById('result-title').textContent   = title;
-    document.getElementById('result-msg').textContent     = msg;
+    document.getElementById('result-icon').textContent      = icon;
+    document.getElementById('result-title').textContent     = title;
+    document.getElementById('result-msg').textContent       = msg;
     document.getElementById('result-score-you').textContent = playerScore;
     document.getElementById('result-score-ai').textContent  = aiScore;
-
-    const levelMsg = newLevel > prevLevel
-        ? `AI levelled up to ${ai.getLevelName()}! The next game will be harder.`
-        : `AI is currently ${ai.getLevelName()} level (${ai.gamesPlayed} games played).`;
-    document.getElementById('result-level-msg').textContent = levelMsg;
+    document.getElementById('result-level-msg').textContent =
+        `Difficulty: ${ai.getLevelName()} · Games played: ${ai.gamesPlayed}`;
 
     showScreen('result-screen');
 }
@@ -364,14 +370,18 @@ function offerDraw() {
 }
 
 function playAgain() {
-    startGame(playerColor);
+    pendingColor = playerColor;
+    startGame(ai.getLevel()); // same colour and difficulty
 }
 
 function switchSides() {
-    startGame(playerColor === 'white' ? 'black' : 'white');
+    backToMenu(); // let the player choose colour and difficulty fresh
 }
 
 function backToMenu() {
+    // Always return to the colour selection step
+    document.getElementById('difficulty-section').classList.add('hidden');
+    document.getElementById('color-section').classList.remove('hidden');
     updateScores();
     updateAIPanel();
     showScreen('start-screen');
