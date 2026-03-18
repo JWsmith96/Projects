@@ -50,23 +50,13 @@
         <section class="page-content">
             <script>
                 function selectUser(button) {
-                        //const row = button.closest('tr');
-                        const userID = button.getAttribute("data-userID");
-                        const firstName = button.getAttribute("data-firstName");
-                        const lastName = button.getAttribute("data-lastName");
-                        const phoneNumber = button.getAttribute("data-phoneNumber");
-                        const emailAddress = button.getAttribute("data-emailAddress");
-                        const username = button.getAttribute("data-username");
-                        const password = button.getAttribute("data-password");
-            
-                        document.getElementById('userID').value = userID;
-                        document.getElementById('firstName').value = firstName;
-                        document.getElementById('lastName').value = lastName;
-                        document.getElementById('phoneNumber').value = phoneNumber;
-                        document.getElementById('emailAddress').value = emailAddress;
-                        document.getElementById('username').value = username;
-                        document.getElementById('password').value = password;
-            
+                        document.getElementById('userID').value = button.getAttribute("data-UserID");
+                        document.getElementById('firstName').value = button.getAttribute("data-firstName");
+                        document.getElementById('lastName').value = button.getAttribute("data-lastName");
+                        document.getElementById('phoneNumber').value = button.getAttribute("data-phoneNumber");
+                        document.getElementById('emailAddress').value = button.getAttribute("data-emailAddress");
+                        document.getElementById('username').value = button.getAttribute("data-Username");
+                        document.getElementById('password').value = button.getAttribute("data-Password");
                     }
             
                 function editUser() {
@@ -126,31 +116,29 @@
                             <th>LastName</th>
                             <th>PhoneNumber</th>
                             <th>EmailAddress</th>
-
                         </tr>
                     </thead>
                     <tbody>
                         <% edituserdetails.forEach(user => { %>
                         <tr>
-                            <td><button 
-                                    type="button" 
-                                    data-UserID="<%= user.UserID %>" 
+                            <td><button
+                                    type="button"
+                                    data-UserID="<%= user.UserID %>"
                                     data-Username="<%= user.Username %>"
                                     data-Password="<%= user.Password %>"
-                                    data-firstName="<%= user.FirstName %>"
-                                    data-lastName="<%= user.LastName %>"
-                                    data-phoneNumber="<%= user.PhoneNumber %>"
-                                    data-emailAddress="<%= user.EmailAddress %>"
-                                    class="select-btn" 
+                                    data-firstName="<%= user.FirstName != null ? user.FirstName : 'null' %>"
+                                    data-lastName="<%= user.LastName != null ? user.LastName : 'null' %>"
+                                    data-phoneNumber="<%= user.PhoneNumber != null ? user.PhoneNumber : 'null' %>"
+                                    data-emailAddress="<%= user.EmailAddress != null ? user.EmailAddress : 'null' %>"
+                                    class="select-btn"
                                     onclick="selectUser(this);">Select</button>
                             </td>
                             <td><%= user.Username %></td>
                             <td><%= user.Password %></td>
-                            <td><%= user.FirstName %></td>
-                            <td><%= user.LastName %></td>
-                            <td><%= user.PhoneNumber %></td>
-                            <td><%= user.EmailAddress %></td>
-
+                            <td><%= user.FirstName != null ? user.FirstName : 'null' %></td>
+                            <td><%= user.LastName != null ? user.LastName : 'null' %></td>
+                            <td><%= user.PhoneNumber != null ? user.PhoneNumber : 'null' %></td>
+                            <td><%= user.EmailAddress != null ? user.EmailAddress : 'null' %></td>
                         </tr>
                         <% }) %>
                     </tbody>
@@ -160,7 +148,7 @@
                     <h2>User Details</h2>
                     <form id="editForm">
                         <input type="hidden" id="userID" name="userID">
-                        
+
                         <label for="firstName">First name</label>
                         <input type="text" id="firstName" name="firstName" placeholder="Enter First name">
 
@@ -174,7 +162,7 @@
                         <input type="text" id="emailAddress" name="emailAddress" placeholder="Enter Email address">
 
                     <h2>Login Details</h2>
-                        
+
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" placeholder="Enter Username">
 
