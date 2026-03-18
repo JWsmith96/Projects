@@ -15,7 +15,7 @@ void Player::HandleLook() {
     delta.x = std::clamp(delta.x, -MAX_D, MAX_D);
     delta.y = std::clamp(delta.y, -MAX_D, MAX_D);
 
-    yaw   += delta.x * SENSITIVITY;
+    yaw   -= delta.x * SENSITIVITY;
     pitch -= delta.y * SENSITIVITY;
 
     const float MAX_PITCH = 89.0f * DEG2RAD;
