@@ -3,16 +3,23 @@ const router = express.Router();
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
+const rateLimit = require('express-rate-limit');
 const pool = require('../db/pool');
 const { isAuthenticated, checkAuthLevel } = require('../middleware/auth');
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: 'Too many login attempts, please try again later.'
+});
 
 // GET /login
 router.get('/login', (req, res) => {
     res.render('login');
 });
 
-// POST /login - rate limiter applied in server.js
-router.post('/login', passport.authenticate('local', {
+// POST /login
+router.post('/login', loginLimiter, passport.authenticate('local', {
     successRedirect: '/',
     failureRedirect: '/login',
     failureFlash: true

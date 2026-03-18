@@ -4,7 +4,6 @@ const path = require('path');
 const helmet = require('helmet');
 const session = require('express-session');
 const flash = require('express-flash');
-const rateLimit = require('express-rate-limit');
 const passport = require('./config/passport');
 
 const app = express();
@@ -36,13 +35,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Rate limiting on auth routes
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 20,
-    message: 'Too many login attempts, please try again later.'
-});
-
 // Home route
 const pool = require('./db/pool');
 const { isAuthenticated } = require('./middleware/auth');
@@ -70,7 +62,7 @@ app.get('/api/finlines', isAuthenticated, async (req, res, next) => {
 });
 
 // Routes
-app.use('/', authLimiter, require('./routes/auth'));
+app.use('/', require('./routes/auth'));
 app.use('/', require('./routes/assets'));
 app.use('/', require('./routes/liabilities'));
 app.use('/', require('./routes/incomes'));
