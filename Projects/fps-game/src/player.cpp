@@ -78,4 +78,4 @@ Vector3 Player::GetForward() const {
 }
 
 Vector3 Player::GetFlatForward() const { return { sinf(yaw), 0.0f, cosf(yaw) }; }
-Vector3 Player::GetRight()       const { return { cosf(yaw), 0.0f, -sinf(yaw) }; }
+Vector3 Player::GetRight()       const { return { -cosf(yaw), 0.0f, sinf(yaw) }; }
