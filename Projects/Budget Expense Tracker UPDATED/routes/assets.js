@@ -1,8 +1,17 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const pool = require('../db/pool');
 const { isAuthenticated, checkAuthLevel } = require('../middleware/auth');
 const { toNullable, toNullableNumber } = require('../utils/dateHelpers');
+
+function validate(req, res) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    return null;
+}
 
 // GET /assets
 router.get('/assets', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
@@ -35,7 +44,10 @@ router.get('/assettypes', isAuthenticated, checkAuthLevel(2), async (req, res, n
 });
 
 // POST /assettypes/update
-router.post('/assettypes/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/assettypes/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     try {
         const { hiddenAssetTypeID, editName, editDescription } = req.body;
         if (!hiddenAssetTypeID) {
@@ -66,7 +78,10 @@ router.post('/assettypes/delete', isAuthenticated, checkAuthLevel(2), async (req
 });
 
 // POST /assets/update
-router.post('/assets/update', isAuthenticated, checkAuthLevel(2), async (req, res, next) => {
+router.post('/assets/update', isAuthenticated, checkAuthLevel(2),
+    body('editName').trim().notEmpty().withMessage('Name is required'),
+    async (req, res, next) => {
+    const err = validate(req, res); if (err) return;
     try {
         const b = req.body;
         const assetTypeID = b.editAssetType === '0' ? null : toNullableNumber(b.editAssetType);
