@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+
+    <style>
+
+        .button-container {
+            display: flex; /* Flexbox container */
+            justify-content: center; /* Center buttons horizontally */
+            align-items: center; /* Center buttons vertically */
+            height: 10vh; /* Full viewport height */
+            gap: 20px; /* Space between buttons */
+        }
+
+        .box-button {
+            padding: 15px 30px; /* Vertical and horizontal padding */
+            font-size: 16px; /* Font size */
+            color: #fff; /* Text color */
+            background-color: #007BFF; /* Background color */
+            border: 2px solid #007BFF; /* Border color and width */
+            border-radius: 4px; /* Rounded corners */
+            text-align: center; /* Center text inside the button */
+            text-decoration: none; /* Remove underline from text */
+            cursor: pointer; /* Show a pointer cursor on hover */
+            transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition */
+        }
+
+        .box-button:hover {
+            background-color: #0056b3; /* Darker background on hover */
+            border-color: #0056b3; /* Match border color with background on hover */
+        }
+
+
+
+
+    </style>
+</head>
+<body>
+    <header class="header-main"></header>
+        <section class="header-box">
+            <h1 class="current-page">Configuration</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = '/configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+        <section class="page-content">
+            <div class="button-container">
+                <a href="/configuration/createnewuser" class="box-button">Create new users</a>
+                <a href="/configuration/edituserdetails" class="box-button">Update/Delete existing users</a>
+                <a href="/configuration/modifyscreenpermissions" class="box-button">Modify screen permissions</a>
+            </div>
+        </section>
+
+        </section>
+    </main>
+</body>
+</html>

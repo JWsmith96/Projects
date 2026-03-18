@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <header class="header-main">
+        <section class="header-box">
+            <h1 class="current-page">Incomes</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = 'configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+        <section class="page-content">
+            <script>
+                function selectIncome(button) {
+                    const IncomeID = button.getAttribute("data-IncomeID");
+                    const Name = button.getAttribute("data-Name");
+                    const Description = button.getAttribute("data-Description");
+                    const IncomeTypeID = button.getAttribute("data-IncomeTypeID");
+                    const IncomeTypeName = button.getAttribute("data-IncomeTypeName");
+                    const AssetID = button.getAttribute("data-AssetID");
+                    const AssetName = button.getAttribute("data-AssetName");
+                    const LiabilityID = button.getAttribute("data-LiabilityID");
+                    const LiabilityName = button.getAttribute("data-LiabilityName");
+                    const StartDate = button.getAttribute("data-StartDate");
+                    const EndDate = button.getAttribute("data-EndDate");
+                    const Amount = button.getAttribute("data-Amount");
+                    const RecurringPeriodID = button.getAttribute("data-RecurringPeriodID");
+                    const RecurringPeriodName = button.getAttribute("data-RecurringPeriodName");
+                    const LastReceivedDate = button.getAttribute("data-LastReceivedDate");
+                    const Applied = button.getAttribute("data-Applied");
+                    
+                    document.getElementById('hiddenIncomeID').value = IncomeID; 
+                    document.getElementById('hiddenIncomeTypeID').value = IncomeTypeID;
+                    document.getElementById('editName').value = Name;
+                    document.getElementById('editDescription').value = Description; 
+                    document.getElementById('editIncomeType').value = IncomeTypeID;
+                    document.getElementById('editStartDate').value = StartDate;
+                    document.getElementById('editEndDate').value = EndDate;
+                    document.getElementById('editAmount').value = Amount; 
+                    document.getElementById('editRecurringPeriod').value = RecurringPeriodID;
+                    document.getElementById('editLastReceivedDate').value = LastReceivedDate;
+
+                    if(AssetID != "") {
+                        document.getElementById('editAsset').value = AssetID;
+                        document.getElementById('editLiability').value = "";
+                        document.getElementById('editLiability').disabled = true;
+                        document.getElementById('editAssetOrLiability_Asset').checked = true;
+                    }
+                    else if (LiabilityID != "") {
+                        document.getElementById('editLiability').value = LiabilityID;
+                        document.getElementById('editAsset').value = "";
+                        document.getElementById('editAsset').disabled = true;
+                        document.getElementById('editAssetOrLiability_Liability').checked = true;
+                    }
+                }
+
+                function showHideAssetLiability() {
+                    let checkAsset = document.getElementById("editAssetOrLiability_Asset");
+                    let checkLiability = document.getElementById("editAssetOrLiability_Liability");
+                    let listAsset = document.getElementById("editAsset");
+                    let listLiability = document.getElementById("editLiability");
+
+                    if(checkAsset.checked) {
+                        if(listAsset.value == "") {
+                            listAsset.value = "0";
+                        }
+                        listAsset.disabled = false;
+                        listLiability.value = "";
+                        listLiability.disabled = true;
+                    }
+                    else if(checkLiability.checked) {
+                        if(listLiability.value == "") {
+                            listLiability.value = "0";
+                        }
+                        listLiability.disabled = false;
+                        listAsset.value = "";
+                        listAsset.disabled = true;
+                    }
+/*                     else {
+                        listAsset.value = "0";
+                        listAsset.disabled = false;
+                        listLiability.value = "0";
+                        listLiability.disabled = false;
+                    } */
+                }
+
+                function saveChanges() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/incomes/update', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded',
+                        }
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+        
+                function deleteIncome() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/incomes/delete', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded',
+                        }
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+
+                function applyIncome() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/incomes/apply', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded',
+                        }
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+        
+                function resetFields(){
+                    document.getElementById('hiddenIncomeID').value = ""; 
+                    document.getElementById('hiddenIncomeTypeID').value = "";
+                    document.getElementById('editName').value = "";
+                    document.getElementById('editDescription').value = ""; 
+                    document.getElementById('editIncomeType').value = "";
+                    document.getElementById('editAsset').value = "0";
+                    document.getElementById('editLiability').value = "0";
+                    document.getElementById('editStartDate').value = "";
+                    document.getElementById('editEndDate').value = "";
+                    document.getElementById('editAmount').value = ""; 
+                    document.getElementById('editRecurringPeriod').value = "";
+                    document.getElementById('editLastReceivedDate').value = "";
+
+                    document.getElementById('editAssetOrLiability_Asset').checked = false;
+                    document.getElementById('editAsset').disabled = false;
+                    document.getElementById('editAssetOrLiability_Liability').checked = false;
+                    document.getElementById('editLiability').disabled = false;
+                    
+                }
+            </script>
+        </head>
+        <body>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Applied</th>                        
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Income Type</th>
+                        <th>Asset</th>
+                        <th>Liability</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Amount</th>
+                        <th>Recurring Period</th>
+                        <th>Last Received Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% incomes.forEach(income => { %>
+                    <tr>
+                        <td><button 
+                            type="button" 
+                            class="select-btn" 
+                            data-IncomeID="<%= income.IncomeID %>" 
+                            data-Name="<%= income.Name %>" 
+                            data-Description="<%= income.Description %>" 
+                            data-IncomeTypeID="<%= income.IncomeTypeID %>" 
+                            data-IncomeTypeName="<%= income.IncomeTypeName %>" 
+                            data-AssetID="<%= income.AssetID %>" 
+                            data-AssetName="<%= income.AssetName %>" 
+                            data-LiabilityID="<%= income.LiabilityID %>" 
+                            data-LiabilityName="<%= income.LiabilityName %>" 
+                            data-StartDate="<%= income.StartDate %>" 
+                            data-EndDate="<%= income.EndDate %>" 
+                            data-Amount="<%= income.Amount %>" 
+                            data-RecurringPeriodID="<%= income.RecurringPeriodID %>" 
+                            data-RecurringPeriodName="<%= recurringPeriod[income.RecurringPeriodID] %>" 
+                            data-LastReceivedDate="<%= income.LastReceivedDate %>" 
+                            data-Applied="<%= income.Applied %>" 
+                            onclick="selectIncome(this);">Select</button>
+                        </td>
+                        <td>
+                            <% if(income.Applied == 1) { cbChecked="checked" } else { cbChecked="" } %>
+                            <input type="checkbox" class="checkbox-select" id="incomeApplied" name="incomeApplied" <%= cbChecked %> onclick="return false" readonly>
+                        </td>
+                        <td><%= income.Name %></td>
+                        <td><%= income.Description %></td>
+                        <td><%= income.IncomeTypeName %></td>
+                        <td><%= income.AssetName %></td>
+                        <td><%= income.LiabilityName %></td>
+                        <td><%= income.StartDate %></td>
+                        <td><%= income.EndDate %></td>
+                        <td><%= income.Amount %></td>
+                        <td><%= recurringPeriod[income.RecurringPeriodID] %></td>
+                        <td><%= income.LastReceivedDate %></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        
+            <!-- Form for editing the selected row -->
+            <div class="form-container">
+                <h2>Edit Selected Income</h2>
+                <form id="editForm">
+                    <input type="hidden" id="hiddenIncomeID" name="hiddenIncomeID">
+                    <input type="hidden" id="hiddenIncomeTypeID" name="hiddenIncomeTypeID">
+        
+                    <label for="editName">Name</label>
+                    <input type="text" id="editName" name="editName" placeholder="Enter name">
+        
+                    <label for="editDescription">Description</label>
+                    <input type="text" id="editDescription" name="editDescription" placeholder="Enter description">
+        
+                    <label for="editIncomeType">Income Type</label>
+                    <select id="editIncomeType" name="editIncomeType">
+                        <option disabled>
+                        <option value="0">_ Select Income Type _</option>
+                        <% incomeTypes.forEach(type => { %>
+                        <option value="<%= type.IncomeTypeID %>"><%= type.Name %></option>
+                        <% }) %>
+                    </select>
+
+                    <div class="radio-button-container">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="radio" class="radio-button-cell" id="editAssetOrLiability_Asset" name="editAssetOrLiability" value="Asset" onClick="showHideAssetLiability()">
+                                        <label for="editAssetOrLiability_Asset">Asset</label>
+                                    </td>
+                                    <td>                                
+                                        <input type="radio" class="radio-button-cell" id="editAssetOrLiability_Liability" name="editAssetOrLiability" value="Liability" onClick="showHideAssetLiability()">
+                                        <label for="editAssetOrLiability_Liability">Liability</label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select id="editAsset" name="editAsset" onclick="document.getElementById('editAssetOrLiability_Asset').click()">
+                                            <label for="editAsset">Asset</label>
+                                            <option value="0">_ Select Asset _</option>
+                                            <% assets.forEach(type => { %>
+                                            <option value="<%= type.AssetID %>"><%= type.Name %></option>
+                                            <% }) %>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="editLiability" name="editLiability" onclick="document.getElementById('editAssetOrLiability_Liability').click()">
+                                            <label for="editLiability">Liability</label>
+                                            <option value="0">_ Select Liability _</option>
+                                            <% liabilities.forEach(type => { %>
+                                            <option value="<%= type.LiabilityID %>"><%= type.Name %></option>
+                                            <% }) %>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+        
+                    <label for="editStartDate">Start Date</label>
+                    <input type="text" id="editStartDate" name="editStartDate" placeholder="Enter start date">
+        
+                    <label for="editEndDate">End Date</label>
+                    <input type="text" id="editEndDate" name="editEndDate" placeholder="Enter end date">
+        
+                    <label for="editAmount">Amount</label>
+                    <input type="text" id="editAmount" name="editAmount" placeholder="Enter amount">
+        
+                    <label for="editRecurringPeriod">Recurring Period</label>
+                    <select id="editRecurringPeriod" name="editRecurringPeriod">
+                        <option value="0">_ Select Recurring Period _</option>
+                        <% recurringPeriod.forEach((typeValue, typeIndex) => { %>
+
+                            <% if(typeIndex > 0 ) {%>
+                                <option value="<%= typeIndex %>"><%= typeValue %></option>
+                            <%}%>
+                        <% }) %>
+                    </select>
+
+                    <label for="editLastReceivedDate">Last Received Date</label>
+                    <input type="text" id="editLastReceivedDate" name="editLastReceivedDate" placeholder="Enter last received date">
+        
+                    <div class="button-container">
+                        <button type="button" onclick="saveChanges()">Save Changes</button>
+                        <button type="button" onclick="resetFields()">Clear</button>
+                        <button type="button" onclick="deleteIncome()">Delete</button>
+                        <button type="button" onclick="applyIncome()">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

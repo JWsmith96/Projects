@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <header class="header-main"></header>
+        <section class="header-box">
+            <h1 class="current-page">Configuration</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = '/configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+        <section class="page-content">
+            <script>
+                function selectUser(button) {
+                        //const row = button.closest('tr');
+                        const userID = button.getAttribute("data-userID");
+                        const username = button.getAttribute("data-username");
+                        const authlevel = button.getAttribute("data-authlevel");
+                        const firstName = button.getAttribute("data-firstName");
+                        const lastName = button.getAttribute("data-lastName");
+                        
+            
+                        document.getElementById('userID').value = userID;
+                        document.getElementById('username').value = username;
+                        document.getElementById('authlevel').value = authlevel;
+                        document.getElementById('firstName').value = firstName;
+                        document.getElementById('lastName').value = lastName;
+                        
+            
+                    }
+            
+                function editAuthenticationLevel() {
+                const selectedForm = document.getElementById("editForm");
+            
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+            
+                    fetch('/modifyscreenpermissions/update', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded' ,
+                        }
+                    }).then(() => {
+                            window.location.reload();
+                        });
+                }
+                
+            </script>
+
+            <h2>Modify screen permissions</h2>
+
+            <h2>Choose which screens to allow user to access</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Username</th>
+                        <th>Authentication Level</th>
+                        <th>FirstName</th>
+                        <th>LastName</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% modifyscreenpermissions.forEach(user => { %>
+                    <tr>
+                        <td><button 
+                                type="button" 
+                                data-UserID="<%= user.UserID %>" 
+                                data-Username="<%= user.Username %>"
+                                data-AuthLevel="<%= user.AuthLevel %>"
+                                data-firstName="<%= user.FirstName %>"
+                                data-lastName="<%= user.LastName %>"
+                                class="select-btn" 
+                                onclick="selectUser(this);">Select</button>
+                        </td>
+                        <td><%= user.Username %></td>
+                        <td><%= user.AuthLevel %></td>
+                        <td><%= user.FirstName %></td>
+                        <td><%= user.LastName %></td>
+
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <div class="form-container">
+                <h2>User Details</h2>
+
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" readonly>
+
+                <label for="authlevel">Current Authenticaion level</label>
+                <input type="text" id="authlevel" name="authlevel" readonly>
+                
+                <form id="editForm">
+                    <input type="hidden" id="userID" name="userID">
+
+                    <label for="authlevel">Enter new authenticaion level (1 for user, 2 for Admin or 3 for Super User)</label>
+                        <input type="text" id="authlevel" name="authlevel" placeholder="Enter new authenticaion level">
+
+                </form>       
+            </div>
+
+            <div class="button-container">
+                <button type="button" onclick="editAuthenticationLevel()">Update Authentication Level</button>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

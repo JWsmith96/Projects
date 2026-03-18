@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <header class="header-main">
+        <section class="header-box">
+            <h1 class="current-page">Asset Types</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = 'configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+       <section class="page-content">
+            <script>
+                function selectAssetType(button) {
+                    //const row = button.closest('tr');
+                    const assetTypeID = button.getAttribute("data-AssetTypeID");
+                    const name = button.getAttribute("data-Name");
+                    const description = button.getAttribute("data-Description");
+        
+                    document.getElementById('hiddenAssetTypeID').value = assetTypeID;
+                    document.getElementById('editName').value = name;
+                    document.getElementById('editDescription').value = description;
+                }
+        
+                function saveChanges() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/assettypes/update', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded' ,
+                        }
+                    }).then(() => {
+                            window.location.reload();
+                        });
+                }
+        
+                function DeleteData() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/assettypes/delete', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded' ,
+                        }
+                    }).then(() => {
+                            window.location.reload();
+                        });
+                }
+        
+                function resetFields(){
+                        document.getElementById('hiddenAssetTypeID').value = "";
+                        document.getElementById('editName').value = "";
+                        document.getElementById('editDescription').value = "";
+                    }
+            </script>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% assettypes.forEach(assettype => { %>
+                    <tr>
+                        <td><button 
+                                type="button" 
+                                data-AssetTypeID="<%= assettype.AssetTypeID %>" 
+                                data-Name="<%= assettype.Name %>"
+                                data-Description="<%= assettype.Description %>"
+                                class="select-btn" 
+                                onclick="selectAssetType(this);">Select</button>
+                        </td>
+                        <td><%= assettype.Name %></td>
+                        <td><%= assettype.Description %></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <!-- Form for editing the selected row -->
+            <div class="form-container">
+                <h2>Edit Selected Asset Type</h2>
+                <form id="editForm">
+                    <input type="hidden" id="hiddenAssetTypeID" name="hiddenAssetTypeID">
+
+                    <label for="editName">Name</label>
+                    <input type="text" id="editName" name="editName" placeholder="Enter name">
+
+                    <label for="editDescription">Description</label>
+                    <input type="text" id="editDescription" name="editDescription" placeholder="Enter description">
+
+                    <div class="button-container">
+                        <button type="button" onclick="saveChanges()">Save Changes</button>
+                        <button type="button" onclick="resetFields()">Clear</button>
+                        <button type="button" onclick="DeleteData()">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

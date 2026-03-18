@@ -1,0 +1,39 @@
+.scrollable-table {
+    height: 90%;
+    width: 95%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+}
+
+.scrollable-table > .table {
+    width: 80%;
+}
+
+.table {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    font-size: 14px;
+    width: 100%;
+}
+
+.table th {
+    background-color: #009578;
+    color: #ffffff;
+    text-align: left;
+    position: sticky;
+    top:0;
+}
+
+.table th,
+.table td {
+    padding: 6px 8px;
+    font-weight: normal;
+}
+
+.table tr {
+    scroll-snap-align: start;
+}
+
+.table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <header class="header-main"></header>
+        <section class="header-box">
+            <h1 class="current-page">Configuration</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = '/configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+        <section class="page-content">
+            <script>
+                function createNewUser() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                        const fd = new FormData(selectedForm);
+                        const urlEncoded = new URLSearchParams(fd).toString();
+        
+                        fetch('/createNewUser/insert', { 
+                            method: "POST", 
+                            body: urlEncoded, 
+                            headers: { 
+                                'content-type': 'application/x-www-form-urlencoded' ,
+                            }
+                        }).then(() => {
+                                window.location.reload();
+                            });
+                }
+            </script>
+
+            <div class="form-container">
+                <h2>Enter User Details</h2>
+                <form id="editForm">
+                    
+                    <label for="firstName">First name</label>
+                    <input type="text" id="firstName" name="firstName" placeholder="Enter First name" required>
+
+                    <label for="lastName">Last name</label>
+                    <input type="text" id="lastName" name="lastName" placeholder="Enter Last name" required>
+
+                    <label for="phoneNumber">Phone number</label>
+                    <input type="text" id="phoneNumber" name="phoneNumber" placeholder="Enter Phone number" required>
+
+                    <label for="emailAddress">Email Address</label>
+                    <input type="text" id="emailAddress" name="emailAddress" placeholder="Enter Email address" required>
+
+                <h2>Enter Login Details</h2>
+        
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Enter Username" required>
+
+                    <label for="password">Password</label>
+                    <input type="text" id="password" name="password" placeholder="Enter Password" required>
+
+                    <div class="button-container">
+                        <button type="button" onclick="createNewUser()">Create User</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

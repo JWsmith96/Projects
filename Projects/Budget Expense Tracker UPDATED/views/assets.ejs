@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <header class="header-main">
+        <section class="header-box">
+            <h1 class="current-page">Assets</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = 'configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+        <section class="page-content">
+            <script>
+                function selectAsset(button) {
+                    const AssetID = button.getAttribute("data-AssetID");
+                    const Name = button.getAttribute("data-Name");
+                    const Description = button.getAttribute("data-Description");
+                    const AssetTypeID = button.getAttribute("data-AssetTypeID");
+                    const AssetTypeName = button.getAttribute("data-AssetTypeName");
+                    const InitialBalance = button.getAttribute("data-InitialBalance");
+                    const CurrentBalance = button.getAttribute("data-CurrentBalance");
+                    const StartDate = button.getAttribute("data-StartDate");
+                    const EndDate = button.getAttribute("data-EndDate");
+                    const TargetBalance = button.getAttribute("data-TargetBalance");
+                    const TargetDate = button.getAttribute("data-TargetDate");
+                    
+                    document.getElementById('hiddenAssetID').value = AssetID; 
+                    document.getElementById('hiddenAssetTypeID').value = AssetTypeID;
+                    document.getElementById('editName').value = Name;
+                    document.getElementById('editDescription').value = Description; 
+                    document.getElementById('editAssetType').value = AssetTypeID;
+                    document.getElementById('editInitialBalance').value = InitialBalance;
+                    document.getElementById('editCurrentBalance').value = CurrentBalance; 
+                    document.getElementById('editStartDate').value = StartDate;
+                    document.getElementById('editEndDate').value = EndDate;
+                    document.getElementById('editTargetBalance').value = TargetBalance; 
+                    document.getElementById('editTargetDate').value = TargetDate;
+                    
+                }
+        
+                function saveChanges() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/assets/update', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded' ,
+                        }
+                    }).then(() => {
+                            window.location.reload();
+                        });
+                }
+        
+                function DeleteData() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/assets/delete', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded' ,
+                        }
+                    }).then(() => {
+                            window.location.reload();
+                        });
+                }
+        
+                function resetFields(){
+                    document.getElementById('hiddenAssetID').value = ""; 
+                    document.getElementById('hiddenAssetTypeID').value = "";
+                    document.getElementById('editName').value = "";
+                    document.getElementById('editDescription').value = ""; 
+                    document.getElementById('editAssetType').value = "";
+                    document.getElementById('editInitialBalance').value = "";
+                    document.getElementById('editCurrentBalance').value = ""; 
+                    document.getElementById('editStartDate').value = "";
+                    document.getElementById('editEndDate').value = "";
+                    document.getElementById('editTargetBalance').value = ""; 
+                    document.getElementById('editTargetDate').value = "";
+                    }
+            </script>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Asset Type</th>
+                        <th>Initial Balance</th>
+                        <th>Current Balance</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Target Balance</th>
+                        <th>Target Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% assets.forEach(asset => { %>
+                    <tr>
+                        <td><button 
+                            type="button" 
+                            data-AssetID="<%= asset.AssetID %>" 
+                            data-Name="<%= asset.Name %>" 
+                            data-Description="<%= asset.Description %>" 
+                            data-AssetTypeID="<%= asset.AssetTypeID %>" 
+                            data-AssetTypeName="<%= asset.AssetTypeName %>" 
+                            data-InitialBalance="<%= asset.InitialBalance %>" 
+                            data-CurrentBalance="<%= asset.CurrentBalance %>" 
+                            data-StartDate="<%= asset.StartDate %>" 
+                            data-EndDate="<%= asset.EndDate %>" 
+                            data-TargetBalance="<%= asset.TargetBalance %>" 
+                            data-TargetDate="<%= asset.TargetDate %>" 
+                            class="select-btn" 
+                            onclick="selectAsset(this);">Select</button>
+                        </td>
+                        <td><%= asset.Name %></td>
+                        <td><%= asset.Description %></td>
+                        <td><%= asset.AssetTypeName %></td>
+                        <td><%= asset.InitialBalance %></td>
+                        <td><%= asset.CurrentBalance %></td>
+                        <td><%= asset.StartDate %></td>
+                        <td><%= asset.EndDate %></td>
+                        <td><%= asset.TargetBalance %></td>
+                        <td><%= asset.TargetDate %></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+
+            <!-- Form for editing the selected row -->
+            <div class="form-container">
+                <h2>Edit Selected Asset</h2>
+                <form id="editForm">
+                    <input type="hidden" id="hiddenAssetID" name="hiddenAssetID">
+                    <input type="hidden" id="hiddenAssetTypeID" name="hiddenAssetTypeID">
+
+                    <label for="editName">Name</label>
+                    <input type="text" id="editName" name="editName" placeholder="Enter name">
+
+                    <label for="editDescription">Description</label>
+                    <input type="text" id="editDescription" name="editDescription" placeholder="Enter description">
+
+                    <label for="editAssetType">Asset Type</label>
+                    <select id="editAssetType" name="editAssetType">
+                        <option value="0">_ Select Assest Type _</option>">
+                        <% for(var count=0; count<AssetTypes.length; count++) {%>
+                        <option value="<%= AssetTypes[count].AssetTypeID %>"><%= AssetTypes[count].Name %></option>">
+                        <% } %>
+                        </select><br><br>
+                    <!-- <input type="text" id="editAssetType" name="editAssetType" placeholder="Enter asset type"> -->
+
+                    <label for="editInitialBalance">Initial Balance</label>
+                    <input type="text" id="editInitialBalance" name="editInitialBalance" placeholder="Enter initial balance">
+
+                    <label for="editCurrentBalance">Current Balance</label>
+                    <input type="text" id="editCurrentBalance" name="editCurrentBalance" placeholder="Enter current balance">
+
+                    <label for="editStartDate">Start Date</label>
+                    <input type="text" id="editStartDate" name="editStartDate" placeholder="Enter start date">
+
+                    <label for="editEndDate">End Date</label>
+                    <input type="text" id="editEndDate" name="editEndDate" placeholder="Enter end date">
+
+                    <label for="editTargetBalance">Target Balance</label>
+                    <input type="text" id="editTargetBalance" name="editTargetBalance" placeholder="Enter target balance">
+                    
+                    <label for="editTargetDate">Target Date</label>
+                    <input type="text" id="editTargetDate" name="editTargetDate" placeholder="Enter target date">
+
+                    <div class="button-container">
+                        <button type="button" onclick="saveChanges()">Save Changes</button>
+                        <button type="button" onclick="resetFields()">Clear</button>
+                        <button type="button" onclick="DeleteData()">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

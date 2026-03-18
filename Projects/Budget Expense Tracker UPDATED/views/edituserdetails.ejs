@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <header class="header-main"></header>
+        <section class="header-box">
+            <h1 class="current-page">Configuration</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = '/configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+        <section class="page-content">
+            <script>
+                function selectUser(button) {
+                        //const row = button.closest('tr');
+                        const userID = button.getAttribute("data-userID");
+                        const firstName = button.getAttribute("data-firstName");
+                        const lastName = button.getAttribute("data-lastName");
+                        const phoneNumber = button.getAttribute("data-phoneNumber");
+                        const emailAddress = button.getAttribute("data-emailAddress");
+                        const username = button.getAttribute("data-username");
+                        const password = button.getAttribute("data-password");
+            
+                        document.getElementById('userID').value = userID;
+                        document.getElementById('firstName').value = firstName;
+                        document.getElementById('lastName').value = lastName;
+                        document.getElementById('phoneNumber').value = phoneNumber;
+                        document.getElementById('emailAddress').value = emailAddress;
+                        document.getElementById('username').value = username;
+                        document.getElementById('password').value = password;
+            
+                    }
+            
+                function editUser() {
+                    const selectedForm = document.getElementById("editForm");
+            
+                        const fd = new FormData(selectedForm);
+                        const urlEncoded = new URLSearchParams(fd).toString();
+            
+                        fetch('/edituserdetails/update', { 
+                            method: "POST", 
+                            body: urlEncoded, 
+                            headers: { 
+                                'content-type': 'application/x-www-form-urlencoded' ,
+                            }
+                        }).then(() => {
+                                window.location.reload();
+                            });
+                    }
+            
+                    function DeleteData() {
+                        const selectedForm = document.getElementById("editForm");
+            
+                        const fd = new FormData(selectedForm);
+                        const urlEncoded = new URLSearchParams(fd).toString();
+            
+                        fetch('/edituserdetails/delete', { 
+                            method: "POST", 
+                            body: urlEncoded, 
+                            headers: { 
+                                'content-type': 'application/x-www-form-urlencoded' ,
+                            }
+                        }).then(() => {
+                                window.location.reload();
+                            });
+                    }
+            
+                    function resetFields(){
+                            document.getElementById('userID').value = "";
+                            document.getElementById('firstName').value = "";
+                            document.getElementById('lastName').value = "";
+                            document.getElementById('phoneNumber').value = "";
+                            document.getElementById('emailAddress').value = "";
+                            document.getElementById('username').value = "";
+                            document.getElementById('password').value = "";
+                        }
+            </script>
+
+                <h1>Update/Delete User Details</h1>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>FirstName</th>
+                            <th>LastName</th>
+                            <th>PhoneNumber</th>
+                            <th>EmailAddress</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% edituserdetails.forEach(user => { %>
+                        <tr>
+                            <td><button 
+                                    type="button" 
+                                    data-UserID="<%= user.UserID %>" 
+                                    data-Username="<%= user.Username %>"
+                                    data-Password="<%= user.Password %>"
+                                    data-firstName="<%= user.FirstName %>"
+                                    data-lastName="<%= user.LastName %>"
+                                    data-phoneNumber="<%= user.PhoneNumber %>"
+                                    data-emailAddress="<%= user.EmailAddress %>"
+                                    class="select-btn" 
+                                    onclick="selectUser(this);">Select</button>
+                            </td>
+                            <td><%= user.Username %></td>
+                            <td><%= user.Password %></td>
+                            <td><%= user.FirstName %></td>
+                            <td><%= user.LastName %></td>
+                            <td><%= user.PhoneNumber %></td>
+                            <td><%= user.EmailAddress %></td>
+
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+
+                <div class="form-container">
+                    <h2>User Details</h2>
+                    <form id="editForm">
+                        <input type="hidden" id="userID" name="userID">
+                        
+                        <label for="firstName">First name</label>
+                        <input type="text" id="firstName" name="firstName" placeholder="Enter First name">
+
+                        <label for="lastName">Last name</label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Enter Last name">
+
+                        <label for="phoneNumber">Phone number</label>
+                        <input type="text" id="phoneNumber" name="phoneNumber" placeholder="Enter Phone number">
+
+                        <label for="emailAddress">Email Address</label>
+                        <input type="text" id="emailAddress" name="emailAddress" placeholder="Enter Email address">
+
+                    <h2>Login Details</h2>
+                        
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter Username">
+
+                        <label for="password">Password</label>
+                        <input type="text" id="password" name="password" placeholder="Enter Password">
+
+                        <div class="button-container">
+                            <button type="button" onclick="editUser()">Update details</button>
+                            <button type="button" onclick="resetFields()">Clear</button>
+                            <button type="button" onclick="DeleteData()">Delete</button>
+                        </div>
+                    </form>
+                </div>
+        </section>
+    </main>
+</body>
+</html>

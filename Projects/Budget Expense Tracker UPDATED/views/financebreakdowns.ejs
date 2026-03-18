@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <header class="header-main">
+        <section class="header-box">
+            <h1 class="current-page">Finance Breakdown</h1>
+            <p class="user-role-display">Logged In As: <span class="user-role"><%= displayuser %></span></p>
+        </section>
+    </header>
+    <main>
+        <aside class="nav-sidebar">
+            <ul>
+                <li><button onclick="window.location.href = '/'">Home</button></li>
+                <li><button onclick="window.location.href = 'finance'">Finance</button></li>
+                <li><button onclick="window.location.href = 'incomes'">Incomes</button></li>
+                <li><button onclick="window.location.href = 'incometypes'">Income Types</button></li>
+                <li><button onclick="window.location.href = 'expenses'">Expenses</button></li>
+                <li><button onclick="window.location.href = 'expensetypes'">Expense Types</button></li>
+                <li><button onclick="window.location.href = 'assets'">Assets</button></li>
+                <li><button onclick="window.location.href = 'assettypes'">Asset Types</button></li>
+                <li><button onclick="window.location.href = 'liabilities'">Liability</button></li>
+                <li><button onclick="window.location.href = 'liabilitytypes'">Liability Types</button></li>
+                <li><button onclick="window.location.href = 'configuration'">Configuration</button></li>
+            </ul>
+        </aside>
+
+        <nav class="user-control-navbar">
+            <a href="/logout"><button>Logout</button></a>
+            <button>Setup</button>
+        </nav>
+
+        <section class="page-content">
+            <script>
+                function selectFinancebreakdowns(button) {
+                    const FinBreakdownID = button.getAttribute("data-FinanceBreakdownID");
+                    const ItemDate = button.getAttribute("data-ItemDate");
+                    const ItemName = button.getAttribute("data-ItemName");
+                    const ItemAmount = button.getAttribute("data-ItemAmount");
+                    const ItemIteration = button.getAttribute("data-ItemIteration");
+                    const IncomeID = button.getAttribute("data-IncomeID");
+                    const IncomeName = button.getAttribute("data-IncomeName");
+                    const ExpenseID = button.getAttribute("data-ExpenseID");
+                    const ExpenseName = button.getAttribute("data-ExpenseName");
+                    
+                    document.getElementById('hiddenFinBreakdownID').value = FinBreakdownID; 
+                    document.getElementById('editItemDate').value = ItemDate;
+                    document.getElementById('editItemName').value = ItemName;
+                    document.getElementById('editItemAmount').value = ItemAmount;
+                    document.getElementById('editItemIteration').value = ItemIteration;
+                    
+
+                    if(IncomeID != "") {
+                        document.getElementById('editIncome').value = IncomeID;
+                        document.getElementById('editExpense').value = "";
+                        document.getElementById('editExpense').disabled = true;
+                        document.getElementById('editIncomeOrExpense_Income').checked = true;
+                    }
+                    else if (ExpenseID != "") {
+                        document.getElementById('editExpense').value = ExpenseID;
+                        document.getElementById('editIncome').value = "";
+                        document.getElementById('editIncome').disabled = true;
+                        document.getElementById('editIncomeOrExpense_Expense').checked = true;
+                    }
+                }
+
+                function showHideIncomeExpense() {
+                    let checkIncome = document.getElementById("editIncomeOrExpense_Income");
+                    let checkExpense = document.getElementById("editIncomeOrExpense_Expense");
+                    let listIncome = document.getElementById("editIncome");
+                    let listExpense = document.getElementById("editExpense");
+
+                    if(checkIncome.checked) {
+                        if(listIncome.value == "") {
+                            listIncome.value = "0";
+                        }
+                        listIncome.disabled = false;
+                        listExpense.value = "";
+                        listExpense.disabled = true;
+                    }
+                    else if(checkExpense.checked) {
+                        if(listExpense.value == "") {
+                            listExpense.value = "0";
+                        }
+                        listExpense.disabled = false;
+                        listIncome.value = "";
+                        listIncome.disabled = true;
+                    }
+                }
+
+                function saveChanges() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/financebreakdowns/update', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded',
+                        }
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+        
+                function deleteFinanceBreakdowns() {
+                    const selectedForm = document.getElementById("editForm");
+        
+                    const fd = new FormData(selectedForm);
+                    const urlEncoded = new URLSearchParams(fd).toString();
+        
+                    fetch('/financebreakdowns/delete', { 
+                        method: "POST", 
+                        body: urlEncoded, 
+                        headers: { 
+                            'content-type': 'application/x-www-form-urlencoded',
+                        }
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+
+                function resetFields(){
+                    document.getElementById('hiddenFinBreakdownID').value = ""; 
+                    document.getElementById('editItemDate').value = "";
+                    document.getElementById('editItemName').value = "";
+                    document.getElementById('editItemAmount').value = "";
+                    document.getElementById('editItemIteration').value = "";
+                    document.getElementById('editIncome').value = "0";
+                    document.getElementById('editExpense').value = "0";
+
+                    document.getElementById('editIncomeOrExpense_Income').checked = false;
+                    document.getElementById('editIncome').disabled = false;
+                    document.getElementById('editIncomeOrExpense_Expense').checked = false;
+                    document.getElementById('editExpense').disabled = false;
+                    
+                }
+            </script>
+        </head>
+        <body>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Iteration</th>
+                        <th>Income</th>
+                        <th>Expense</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% financebreakdowns.forEach(financeBreakdown => { %>
+                    <tr>
+                        <td><button 
+                            type="button" 
+                            class="select-btn" 
+                            data-FinanceBreakdownID="<%= financeBreakdown.FinBreakdownID %>" 
+                            data-ItemDate="<%= financeBreakdown.ItemDate %>" 
+                            data-ItemName="<%= financeBreakdown.ItemName %>" 
+                            data-ItemAmount="<%= financeBreakdown.ItemAmount %>" 
+                            data-ItemIteration="<%= financeBreakdown.ItemIteration %>" 
+                            data-IncomeID="<%= financeBreakdown.IncomeID %>" 
+                            data-IncomeName="<%= financeBreakdown.IncomeName %>" 
+                            data-ExpenseID="<%= financeBreakdown.ExpenseID %>" 
+                            data-ExpenseName="<%= financeBreakdown.ExpenseName %>" 
+                            onclick="selectFinancebreakdowns(this);">Select</button>
+                        </td>
+                        <td><%= financeBreakdown.ItemDate %></td>
+                        <td><%= financeBreakdown.ItemName %></td>
+                        <td><%= financeBreakdown.ItemAmount %></td>
+                        <td><%= financeBreakdown.ItemIteration %></td>
+                        <td><%= financeBreakdown.IncomeName %></td>
+                        <td><%= financeBreakdown.ExpenseName %></td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        
+            <!-- Form for editing the selected row -->
+            <div class="form-container">
+                <h2>Edit Selected Column</h2>
+                <form id="editForm">
+                    <input type="hidden" id="hiddenFinBreakdownID" name="hiddenFinBreakdownID">
+        
+                    <label for="editItemDate">Date</label>
+                    <input type="text" id="editItemDate" name="editItemDate" placeholder="Enter date">
+                    <label for="editItemName">Name</label>
+                    <input type="text" id="editItemName" name="editItemName" placeholder="Enter name">
+                    <label for="editItemAmount">Amount</label>
+                    <input type="text" id="editItemAmount" name="editItemAmount" placeholder="Enter amount">
+
+                    <label for="editItemIteration">Iteration</label>
+                    <input type="text" id="editItemIteration" name="editItemIteration" placeholder="Enter Sequence (Integer Only)">
+        
+                    <div class="radio-button-container">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <input type="radio" class="radio-button-cell" id="editIncomeOrExpense_Income" name="editIncomeOrExpense" value="1" onClick="showHideIncomeExpense()">
+                                        <label for="editIncomeOrExpense_Income">Income</label>
+                                    </td>
+                                    <td>                                
+                                        <input type="radio" class="radio-button-cell" id="editIncomeOrExpense_Expense" name="editIncomeOrExpense" value="2" onClick="showHideIncomeExpense()">
+                                        <label for="editIncomeOrExpense_Expense">Expense</label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select id="editIncome" name="editIncome" onclick="document.getElementById('editIncomeOrExpense_Income').click()">
+                                            <label for="editIncome">Income</label>
+                                            <option value="0">_ Select Income _</option>
+                                            <% incomes.forEach(type => { %>
+                                            <option value="<%= type.IncomeID %>"><%= type.Name %></option>
+                                            <% }) %>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="editExpense" name="editExpense" onclick="document.getElementById('editIncomeOrExpense_Expense').click()">
+                                            <label for="editExpense">Expense</label>
+                                            <option value="0">_ Select Expense _</option>
+                                            <% expenses.forEach(type => { %>
+                                            <option value="<%= type.ExpenseID %>"><%= type.Name %></option>
+                                            <% }) %>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+        
+                    <div class="button-container">
+                        <button type="button" onclick="saveChanges()">Save Changes</button>
+                        <button type="button" onclick="resetFields()">Clear</button>
+                        <button type="button" onclick="deleteFinanceBreakdowns()">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
